@@ -18,11 +18,11 @@
 - [ ] Create telegram bot to have push notifications when satellite is near
 - [ ] Combine the client and tg bot with a backend API in Dashboard app
 
-## Install
+## Install (for ISS-only web version)
 
 ```bash
 git clone https://github.com/WilfredoN/satellite-tracker.git
-cd satellite-tracker
+cd satellite-tracker/apps/web
 cp .env.example .env
 # Fill in your Cesium Ion API key
 pnpm install
