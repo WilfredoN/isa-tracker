@@ -1,0 +1,26 @@
+{
+  "name": "iss-tracker",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "copy-cesium": "cpy \"node_modules/cesium/Build/Cesium/Workers/**/*\" \"public/Workers\" && cpy \"node_modules/cesium/Build/Cesium/ThirdParty/**/*\" \"public/ThirdParty\" && cpy \"node_modules/cesium/Build/Cesium/Assets/**/*\" \"public/Assets\" && cpy \"node_modules/cesium/Build/Cesium/Widgets/**/*\" \"public/Widgets\"",
+    "postinstall": "npm run copy-cesium"
+  },
+  "devDependencies": {
+    "cpy-cli": "^6.0.0",
+    "vite": "npm:rolldown-vite@7.2.5"
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "npm:rolldown-vite@7.2.5"
+    }
+  },
+  "dependencies": {
+    "cesium": "^1.136.0",
+    "satellite.js": "^6.0.1"
+  }
+}
