@@ -47,6 +47,18 @@ async def create_user(user: UserBase, db: Session = Depends(get_db)):
     return {"message": f"User with chat_id {user.chat_id} created!"}
 
 
+@app.patch("/users/{id}")
+async def update_user(id: int, user: UserBase, db: Session = Depends(get_db)):
+    db_user = db.query(UserModel).filter(UserModel.id == id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    db_user.latitude = user.latitude
+    db_user.longitude = user.longitude
+    db.commit()
+    return {"message": f"User with id {id} updated!"}
+
+
 @app.delete("/users/{chat_id}")
 async def delete_user(chat_id: int, db: Session = Depends(get_db)):
     db_user = db.query(UserModel).filter(UserModel.chat_id == chat_id).first()
@@ -55,6 +67,12 @@ async def delete_user(chat_id: int, db: Session = Depends(get_db)):
     db.delete(db_user)
     db.commit()
     return {"message": f"User with chat_id {chat_id} deleted!"}
+
+
+@app.get("/satellites")
+async def get_satellites(db: Session = Depends(get_db)):
+    satellites = db.query(SatelliteModel).all()
+    return {"satellites": satellites}
 
 
 @app.post("/satellites")
