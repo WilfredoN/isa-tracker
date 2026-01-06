@@ -10,7 +10,6 @@
 
 - [x] Create apps/ directory for modules
 - [ ] Create backend API to keep user data and his satellites
-  - [ ] Finish paswordless auth approach
   - [ ] Tests?
 - [x] Create calculation python script which calculates satellite position related to user location
 - [ ] Migrate vanilla js to react
@@ -28,3 +27,7 @@ cp .env.example .env
 pnpm install
 pnpm run dev
 ```
+
+## Resources used:
+
+### 1. TLE Source - https://celestrak.org/NORAD/elements/
