@@ -20,9 +20,9 @@ importers:
       react-dom:
         specifier: ^19.2.0
         version: 19.2.3(react@19.2.3)
-      tailwindscss:
-        specifier: ^0.3.0
-        version: 0.3.0
+      tailwindcss:
+        specifier: ^4.1.18
+        version: 4.1.18
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.1
@@ -1045,10 +1045,6 @@ packages:
   tailwindcss@4.1.18:
     resolution: {integrity: sha512-4+Z+0yiYyEtUVCScyfHCxOYP06L5Ne+JiHhY2IjR2KWMIWhJOYZKLSGZaP5HkZ8+bY0cxfzwDE5uOmzFXyIwxw==}
 
-  tailwindscss@0.3.0:
-    resolution: {integrity: sha512-fv6JSA5tW++MUeZ8SUwBc3pihiHPDdZZrQlwxTr7igvCZZQ5NkK9yXvI7CZsm+KesG//rcq4CEkgA9d+pJwHtg==}
-    hasBin: true
-
   tapable@2.3.0:
     resolution: {integrity: sha512-g9ljZiwki/LfxmQADO3dEY1CbpmXT5Hm2fJ+QaGKwSXUylMybePR7/67YW7jOrrvjEgL1Fmz5kzyAjWVWLlucg==}
     engines: {node: '>=6'}
@@ -2049,8 +2045,6 @@ snapshots:
       has-flag: 4.0.0
 
   tailwindcss@4.1.18: {}
-
-  tailwindscss@0.3.0: {}
 
   tapable@2.3.0: {}
 
