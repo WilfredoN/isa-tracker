@@ -23,7 +23,7 @@ export const SatelliteList = ({ satellites, panel }: SatelliteListProps) => {
   };
 
   return (
-    <ul className="flex-1 space-y-2 overflow-y-auto pr-1" onClick={resetSelectionOnClick}>
+    <ul className="flex-1 space-y-2 overflow-y-auto" onClick={resetSelectionOnClick}>
       {panel && <li>{panel}</li>}
       {satellites.length === 0 ? (
         <NoSatellites />

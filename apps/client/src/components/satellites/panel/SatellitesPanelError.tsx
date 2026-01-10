@@ -12,7 +12,7 @@ export const SatellitesPanelError = ({ message, onRetry }: SatellitesPanelErrorP
         className="border-(--destructive) mt-1 border-2 px-3 py-1 text-xs font-bold text-white transition-colors hover:bg-red-700"
         onClick={onRetry}
       >
-        Retry
+        RETRY
       </button>
     )}
   </div>
