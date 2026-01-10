@@ -1,8 +1,26 @@
 import type { ButtonHTMLAttributes } from 'react';
+import clsx from 'clsx';
 
-export const Button = ({ className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) => (
+type ButtonVariant = 'default' | 'error';
+
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: ButtonVariant;
+}
+
+
+const baseClasses =
+  'cursor-pointer border-2 px-4 py-2 font-bold uppercase tracking-wider transition-all focus:shadow-[var(--glow-strong)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-inherit disabled:hover:shadow-none bg-transparent';
+
+const variantClasses: Record<ButtonVariant, string> = {
+  default:
+    'border-(--foreground) text-[var(--foreground)] hover:text-[var(--background)] hover:bg-[var(--foreground)]',
+  error:
+    'border-(--destructive) text-(--destructive) hover:text-white hover:bg-red-700',
+};
+
+export const Button = ({ className = '', variant = 'default', ...props }: ButtonProps) => (
   <button
-    className={`border-(--foreground) bg-(--background) cursor-pointer border-2 px-4 py-2 font-bold uppercase tracking-wider text-[var(--foreground)] transition-all hover:bg-[var(--foreground)] hover:text-[var(--background)] hover:shadow-[var(--glow-strong)] focus:shadow-[var(--glow-strong)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-[var(--background)] disabled:hover:text-[var(--foreground)] disabled:hover:shadow-none ${className}`}
+    className={clsx(baseClasses, variantClasses[variant], className)}
     {...props}
   />
 );
