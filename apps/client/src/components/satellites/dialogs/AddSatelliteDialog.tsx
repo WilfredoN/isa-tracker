@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useOutsideClicks } from '../../../hooks/useOutsideClicks';
 import { Input, Button } from '../../ui';
 import type { AddSatelliteData } from '../../../types';
 
@@ -24,14 +25,20 @@ export const AddSatelliteDialog = ({ open, onOpenChange, onAdd }: AddSatelliteDi
   };
 
   const handleClose = () => onOpenChange(false);
-
   const isValid = form.name && form.tle1 && form.tle2;
+
+  const dialogRef = useOutsideClicks<HTMLDivElement>(() => {
+    if (open) onOpenChange(false);
+  });
 
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm">
-      <div className="animate-fade-in relative w-full max-w-md border-2 border-[var(--foreground)] bg-[var(--panel-bg)] p-6 shadow-[var(--glow-strong)]">
+      <div
+        ref={dialogRef}
+        className="animate-fade-in relative w-full max-w-md border-2 border-[var(--foreground)] bg-[var(--panel-bg)] p-6 shadow-[var(--glow-strong)]"
+      >
         <h2 className="border-b-2 border-[var(--foreground)] pb-2 text-lg font-bold uppercase tracking-widest text-[var(--foreground)]">
           &gt; ADD SATELLITE
         </h2>
