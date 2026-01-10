@@ -22,6 +22,12 @@
 
 **Satellite Tracker** is a dashboard for tracking satellites, featuring a Telegram bot for notifications and a Cesium-powered globe for real-time satellite rendering. Originally started as an ISS tracker tutorial, it now supports multiple satellites, user data management, and push notifications.
 
+
+## API
+
+- **Cloud Cover Data:**
+  - Satellite visibility calculations use real-time cloud cover data from the [Open-Meteo API](https://open-meteo.com/), a free and open weather API. This allows the backend to consider local cloudiness when determining if a satellite is visible to the user. The implementation is modular and can be swapped for other providers if needed.
+
 ## Features
 
 
@@ -56,6 +62,7 @@
   - [x] Integrate Cesium globe for satellite visualization
   - [x] Display satellites on globe
   - [ ] Support tracking of any number of satellites (>=1)
+  - [ ] Add estimation of when satellite passes over user location next time
   - [ ] Improve UI/UX for satellite management
 
 - [x] **Telegram Bot**
