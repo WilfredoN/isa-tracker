@@ -78,29 +78,37 @@ async def delete_user(chat_id: int, db: Session = Depends(get_db)):
 @app.get("/satellites")
 async def get_satellites(db: Session = Depends(get_db)):
     satellites = db.query(SatelliteModel).all()
-    return {"satellites": satellites}
+    result = [
+        {
+            "id": satellite.id,
+            "name": satellite.name,
+            "tle_1": satellite.tle_1,
+            "tle_2": satellite.tle_2,
+            "added_at": satellite.added_at,
+        }
+        for satellite in satellites
+    ]
+    return {"satellites": result}
 
 
 @app.post("/satellites")
 async def add_satellite(satellite: SatelliteCreate, db: Session = Depends(get_db)):
     db_satellite = (
         db.query(SatelliteModel)
-        .filter(
-            SatelliteModel.name == satellite.name,
-        )
+        .filter(SatelliteModel.name.ilike(satellite.name))
         .first()
     )
-    if not db_satellite:
-        db_satellite = SatelliteModel(
-            name=satellite.name, tle_1=satellite.tle_1, tle_2=satellite.tle_2
-        )
-        db.add(db_satellite)
-        db.flush()
-        return {
-            "message": f"Satellite {satellite.name} added with ID {db_satellite.id} at {db_satellite.added_at}"
-        }
-
-    raise HTTPException(status_code=409, detail="Satellite already exists")
+    if db_satellite:
+        raise HTTPException(status_code=409, detail="Satellite with similar name already exists")
+    db_satellite = SatelliteModel(
+        name=satellite.name, tle_1=satellite.tle_1, tle_2=satellite.tle_2
+    )
+    db.add(db_satellite)
+    db.flush()
+    db.commit()
+    return {
+        "message": f"Satellite {satellite.name} added with ID {db_satellite.id} at {db_satellite.added_at}"
+    }
 
 
 @app.delete("/satellites/{id}")

@@ -26,10 +26,12 @@ class User(Base):
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
 
 
+from sqlalchemy import Index, func as sa_func
+
 class Satellite(Base):
     __tablename__ = "satellites"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
     tle_1: Mapped[str] = mapped_column(Text, nullable=False)
     tle_2: Mapped[str] = mapped_column(Text, nullable=False)
     is_visible: Mapped[bool] = mapped_column(
@@ -37,4 +39,8 @@ class Satellite(Base):
     )
     added_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now()
+    )
+
+    __table_args__ = (
+        Index("ix_satellites_name_lower_unique", sa_func.lower(name), unique=True),
     )
