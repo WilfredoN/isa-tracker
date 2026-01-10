@@ -1,7 +1,5 @@
 import { useState } from 'react';
-// Removed Radix UI Dialog imports
-import { Input } from '../../ui/input';
-import { Button } from '../../ui/button';
+import { Input, Button } from '../../ui';
 import type { AddSatelliteData } from '../../../types';
 
 type AddSatelliteDialogProps = {
@@ -34,7 +32,7 @@ export const AddSatelliteDialog = (props: AddSatelliteDialogProps) => {
           <button
             aria-label="Close"
             onClick={() => onOpenChange(false)}
-            className="absolute right-4 top-4 text-xl font-bold text-blue-400 hover:text-blue-200 focus:outline-none"
+            className="absolute right-4 top-4 cursor-pointer text-xl font-bold text-blue-400 hover:text-blue-200 focus:outline-none"
           >
             ×
           </button>
@@ -63,7 +61,6 @@ export const AddSatelliteDialog = (props: AddSatelliteDialogProps) => {
           </div>
           <div className="mt-6 flex justify-end gap-2">
             <Button
-              variant="outline"
               type="button"
               className="border-blue-400 bg-blue-400 text-blue-950 hover:bg-blue-500 hover:text-blue-950"
               onClick={() => onOpenChange(false)}
