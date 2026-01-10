@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import {
   SatellitesPanelLayout,
   SatellitesPanelHeader,
@@ -12,13 +12,7 @@ import { AddSatelliteDialog } from '../dialogs/AddSatelliteDialog';
 export const SatellitesPanel = () => {
   const [search, setSearch] = useState('');
   const [addOpen, setAddOpen] = useState(false);
-  const { satellites, isLoading, error, addSatellite } = useSatellites();
-
-  const filteredSatellites = useMemo(
-    () =>
-      satellites.filter((satellite) => satellite.name.toLowerCase().includes(search.toLowerCase())),
-    [satellites, search],
-  );
+  const { satellites, isLoading, error, addSatellite } = useSatellites(search);
 
   const handleAddClick = () => setAddOpen(true);
 
@@ -34,7 +28,7 @@ export const SatellitesPanel = () => {
       ) : error ? (
         <SatellitesPanelError />
       ) : (
-        <SatelliteList satellites={filteredSatellites} />
+        <SatelliteList satellites={satellites} />
       )}
       <AddSatelliteDialog open={addOpen} onOpenChange={setAddOpen} onAdd={addSatellite} />
     </SatellitesPanelLayout>
