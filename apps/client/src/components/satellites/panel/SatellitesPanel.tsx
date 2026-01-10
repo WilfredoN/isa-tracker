@@ -8,6 +8,7 @@ import {
 import { SatelliteList } from '../list/SatelliteList';
 import { useSatellites } from '../hooks/useSatellites';
 import { AddSatelliteDialog } from '../dialogs/AddSatelliteDialog';
+import { ISS_PLACEHOLDER } from '../../../services/placeholderSatellite';
 
 export const SatellitesPanel = () => {
   const [search, setSearch] = useState('');
@@ -26,7 +27,10 @@ export const SatellitesPanel = () => {
       {isLoading ? (
         <SatellitesPanelLoading />
       ) : error ? (
-        <SatellitesPanelError />
+        <>
+          <SatellitesPanelError />
+          <SatelliteList satellites={[ISS_PLACEHOLDER]} />
+        </>
       ) : (
         <SatelliteList satellites={satellites} />
       )}
