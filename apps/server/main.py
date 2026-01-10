@@ -55,14 +55,18 @@ async def create_user(user: UserBase, db: Session = Depends(get_db)):
 
 @app.patch("/users/{id}")
 async def update_user(id: int, user: UserBase, db: Session = Depends(get_db)):
+    from fastapi.responses import JSONResponse
     db_user = db.query(UserModel).filter(UserModel.id == id).first()
     if not db_user:
-        return {
-            "error": {
-                "message": "User not found",
-                "code": 404
+        return JSONResponse(
+            status_code=404,
+            content={
+                "error": {
+                    "message": "User not found",
+                    "code": 404
+                }
             }
-        }
+        )
     db_user.latitude = user.latitude
     db_user.longitude = user.longitude
     db.commit()
@@ -71,14 +75,18 @@ async def update_user(id: int, user: UserBase, db: Session = Depends(get_db)):
 
 @app.delete("/users/{chat_id}")
 async def delete_user(chat_id: int, db: Session = Depends(get_db)):
+    from fastapi.responses import JSONResponse
     db_user = db.query(UserModel).filter(UserModel.chat_id == chat_id).first()
     if not db_user:
-        return {
-            "error": {
-                "message": "User not found",
-                "code": 404
+        return JSONResponse(
+            status_code=404,
+            content={
+                "error": {
+                    "message": "User not found",
+                    "code": 404
+                }
             }
-        }
+        )
     db.delete(db_user)
     db.commit()
     return {"message": f"User with chat_id {chat_id} deleted!"}
@@ -102,18 +110,22 @@ async def get_satellites(db: Session = Depends(get_db)):
 
 @app.post("/satellites")
 async def add_satellite(satellite: SatelliteCreate, db: Session = Depends(get_db)):
+    from fastapi.responses import JSONResponse
     db_satellite = (
         db.query(SatelliteModel)
         .filter(SatelliteModel.name.ilike(satellite.name))
         .first()
     )
     if db_satellite:
-        return {
-            "error": {
-                "message": f"Satellite with name similar to {satellite.name} already exists",
-                "code": 409
+        return JSONResponse(
+            status_code=409,
+            content={
+                "error": {
+                    "message": f"Satellite with name similar to {satellite.name} already exists",
+                    "code": 409
+                }
             }
-        }
+        )
     db_satellite = SatelliteModel(
         name=satellite.name, tle_1=satellite.tle_1, tle_2=satellite.tle_2
     )
@@ -127,14 +139,18 @@ async def add_satellite(satellite: SatelliteCreate, db: Session = Depends(get_db
 
 @app.delete("/satellites/{id}")
 async def delete_satellite(id: int, db: Session = Depends(get_db)):
+    from fastapi.responses import JSONResponse
     db_satellite = db.query(SatelliteModel).filter(SatelliteModel.id == id).first()
     if not db_satellite:
-        return {
-            "error": {
-                "message": "Satellite not found",
-                "code": 404
+        return JSONResponse(
+            status_code=404,
+            content={
+                "error": {
+                    "message": "Satellite not found",
+                    "code": 404
+                }
             }
-        }
+        )
     db.delete(db_satellite)
     db.commit()
     return {"message": f"Satellite with ID {id} deleted!"}
