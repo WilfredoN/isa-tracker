@@ -40,7 +40,7 @@
 
 - [x] **Repository Structure & Setup**
   - [x] Create `apps/` directory for modular structure
-  - [x] Add requirements.txt for Python dependencies
+  - [x] Add per-app requirements.txt for Python dependencies
   - [x] Add .env.example files for all apps
   - [x] Add Dockerfile and docker-compose for backend
 
@@ -131,14 +131,14 @@ venv\Scripts\activate
 
 ```bash
 pip install --upgrade pip
-pip install -r ../requirements.txt
+pip install -r requirements.txt
 ```
 
-> **Note:** The requirements.txt is located in `apps/requirements.txt`. Adjust the path if running from a different directory.
+> **Note:** Each app (server, bot) has its own requirements.txt. Run the install command in the respective app directory.
 
 #### 3. (Optional) Set up environment variables
 
-Copy `.env.example` to `.env` in `apps/bot` as needed, and fill in required values.
+Copy `.env.example` to `.env` in each app as needed, and fill in required values.
 
 #### 4. Run the backend server
 
@@ -159,13 +159,14 @@ uvicorn main:app --reload
 - **Backend:**
   - Run `uvicorn main:app --reload` in `apps/server`.
 - **Telegram Bot:**
-  - Configure and run from `apps/bot` (see its README or .env.example).
+  - Configure and run from `apps/bot` (see its README or .env.example). Install dependencies with `pip install -r requirements.txt` in `apps/bot`.
 
 ## Configuration
 
 - Environment variables are managed via `.env` files in each app directory.
 - For Cesium, set `VITE_CESIUM_ION_TOKEN` in `apps/client/.env`.
 - For bot, see `.env.example` in `apps/bot`.
+- For Python apps, install dependencies from the local requirements.txt in each app directory.
 
 ## Contributing
 

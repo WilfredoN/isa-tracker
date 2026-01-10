@@ -13,10 +13,9 @@ BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
 def check_visibillity_and_notify():
     db = SessionLocal()
     try:
-        user = db.query(User).first()
-        if not user or not user.latitude:
+        user = db.query(User).filter(User.chat_id.is_not(None)).first()
+        if not user or user.latitude is None or user.longitude is None:
             return
-        # TODO: Make method for this?
         satellites = db.query(Satellite).all()
         for satellite in satellites:
             currently_visible = is_satellite_visible(
@@ -26,24 +25,19 @@ def check_visibillity_and_notify():
                 user.longitude,
                 satellite.name,
             )
-
-            if currently_visible and not satellite.is_visible:
-                # TODO: make array of different messages variations
+            was_visible = bool(satellite.is_visible)
+            if currently_visible and not was_visible:
                 send_telegram_message(
-                    user.telegram_id, f"🛰 {satellite.name} is visible now!"
+                    user.chat_id, f"🛰 {satellite.name} is visible now!"
                 )
                 satellite.is_visible = True
-                db.add(satellite)
-            elif not currently_visible and satellite.is_visible:
+                db.commit()
+            elif not currently_visible and was_visible:
                 send_telegram_message(
-                    user.telegram_id, f"🛰 {satellite.name} is no longer visible."
+                    user.chat_id, f"🛰 {satellite.name} is no longer visible."
                 )
                 satellite.is_visible = False
-                db.add(satellite)
-            else:
-                continue
-
-            db.commit()
+                db.commit()
     except Exception as e:
         print(f"Error occurred while checking visibility: {e}")
     finally:
@@ -51,6 +45,8 @@ def check_visibillity_and_notify():
 
 
 def send_telegram_message(chat_id, message):
+    if not BOT_TOKEN:
+        raise RuntimeError("TELEGRAM_TOKEN is required for bot notifications")
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     data = {"chat_id": chat_id, "text": message}
     response = requests.post(url, data=data)

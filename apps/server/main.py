@@ -1,12 +1,18 @@
 from db.database import SessionLocal
 from db.schema import Satellite as SatelliteModel
 from db.schema import User as UserModel
+from db.tables import create_tables
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from schemas import SatelliteCreate, UserBase
 from sqlalchemy.orm import Session
 
+
 app = FastAPI(title="Satellite Tracker API")
+
+@app.on_event("startup")
+def on_startup():
+    create_tables()
 
 app.add_middleware(
     CORSMiddleware,

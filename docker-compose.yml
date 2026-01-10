@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres
+    image: postgres:16-alpine
     restart: always
     environment:
       POSTGRES_USER: admin
@@ -10,6 +10,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d satellite_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   api:
     build: ./apps/server
@@ -21,30 +26,56 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg2://admin:password@db:5432/satellite_db
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/')\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   redis:
     image: redis:alpine
     restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   worker:
     build: ./apps/server
-    command: celery -A celery_app worker --loglevel=info
+    command: su -s /bin/sh -c 'celery -A celery_app worker --loglevel=info' nobody
     environment:
       - DATABASE_URL=postgresql+psycopg2://admin:password@db:5432/satellite_db
       - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
   beat:
     build: ./apps/server
-    command: celery -A celery_app beat --loglevel=info
+    command: su -s /bin/sh -c 'celery -A celery_app beat --loglevel=info -s /tmp/celerybeat-schedule' nobody
     depends_on:
-      - redis
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   bot:
     build: ./apps/bot
     command: python main.py
     env_file:
       - ./apps/bot/.env
+    environment:
+      - API_URL=http://api:8000
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   postgres_data:
