@@ -6,15 +6,12 @@ import { SatellitesLayer } from './SatellitesLayer';
 import { useSatellites } from '../../../components/satellites/hooks/useSatellites';
 import { ISS_PLACEHOLDER } from '../../../services/placeholderSatellite';
 import { useRealtimeClock } from '../hooks/useRealtimeClock';
-import type { Satellite } from '../../../types/satellite';
+import { useSatelliteStore } from '../../../store';
 
-type GlobeProps = {
-  selectedSatellite: Satellite | null;
-};
-
-export const Globe = ({ selectedSatellite }: GlobeProps) => {
+export const Globe = () => {
   const { satellites } = useSatellites('', true);
   const viewerRef = useRef<CesiumComponentRef<Cesium.Viewer>>(null);
+  const selectedSatellite = useSatelliteStore((state) => state.selectedSatellite);
   useRealtimeClock(viewerRef);
   const sats = useMemo(() => {
     const issId = ISS_PLACEHOLDER.id;

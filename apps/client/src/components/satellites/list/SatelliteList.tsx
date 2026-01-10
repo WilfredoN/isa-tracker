@@ -1,22 +1,24 @@
+import { useShallow } from 'zustand/react/shallow';
 import type { Satellite } from '../../../types/satellite';
+import { useSatelliteStore } from '../../../store';
 import { NoSatellites } from './NoSatellites';
 
 type SatelliteListProps = {
   satellites: Satellite[];
-  onSelect?: (satellite: Satellite) => void;
-  selectedSatellite?: Satellite | null;
-  onClearSelected?: () => void;
 };
 
-export const SatelliteList = ({
-  satellites,
-  onSelect,
-  selectedSatellite,
-  onClearSelected,
-}: SatelliteListProps) => {
+export const SatelliteList = ({ satellites }: SatelliteListProps) => {
+  const { selectedSatellite, selectSatellite, clearSelection } = useSatelliteStore(
+    useShallow((state) => ({
+      selectedSatellite: state.selectedSatellite,
+      selectSatellite: state.selectSatellite,
+      clearSelection: state.clearSelection,
+    })),
+  );
+
   const handleUlClick = (e: React.MouseEvent<HTMLUListElement>) => {
     if (e.target === e.currentTarget) {
-      onClearSelected?.();
+      clearSelection();
     }
   };
   return (
@@ -35,7 +37,7 @@ export const SatelliteList = ({
                   ? 'bg-[var(--foreground)] text-[var(--background)] shadow-[var(--glow)]'
                   : 'bg-[var(--input)] hover:bg-[var(--foreground)] hover:text-[var(--background)] hover:shadow-[var(--glow)]',
               ].join(' ')}
-              onClick={() => onSelect?.(satellite)}
+              onClick={() => selectSatellite(satellite)}
             >
               <span className="text-base font-bold uppercase tracking-wide">
                 &gt; {satellite.name}
