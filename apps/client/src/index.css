@@ -32,7 +32,7 @@
   }
 
   body {
-    @apply bg-[var(--background)] text-[var(--foreground)];
+    @apply bg-(--background) text-(--foreground);
     font-family: 'Courier New', Courier, monospace;
     letter-spacing: 0.05em;
   }
