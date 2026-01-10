@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useOutsideClicks } from '../../../hooks/useOutsideClicks';
 import { Input, Button } from '../../ui';
 import type { AddSatelliteData } from '../../../types';
+import { parseTLEPaste } from './tleHelpers';
 
 type AddSatelliteDialogProps = {
   open: boolean;
@@ -12,19 +13,31 @@ type AddSatelliteDialogProps = {
 export const AddSatelliteDialog = ({ open, onOpenChange, onAdd }: AddSatelliteDialogProps) => {
   const [form, setForm] = useState<AddSatelliteData>({ name: '', tle1: '', tle2: '' });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+  }, []);
 
-  const handleAdd = () => {
+  const handlePaste = useCallback(
+    (field: keyof AddSatelliteData) => (e: React.ClipboardEvent<HTMLInputElement>) => {
+      const text = e.clipboardData.getData('text');
+      const parsed = parseTLEPaste(text, field, form);
+      if (parsed !== form) {
+        e.preventDefault();
+        setForm(parsed);
+      }
+    },
+    [form],
+  );
+
+  const handleAdd = useCallback(() => {
     if (form.name && form.tle1 && form.tle2) {
       onAdd(form);
       setForm({ name: '', tle1: '', tle2: '' });
       onOpenChange(false);
     }
-  };
+  }, [form, onAdd, onOpenChange]);
 
-  const handleClose = () => onOpenChange(false);
+  const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
   const isValid = form.name && form.tle1 && form.tle2;
 
   const dialogRef = useOutsideClicks<HTMLDivElement>(() => {
@@ -50,9 +63,27 @@ export const AddSatelliteDialog = ({ open, onOpenChange, onAdd }: AddSatelliteDi
           ×
         </button>
         <div className="mt-4 space-y-3">
-          <Input name="name" placeholder="NAME" value={form.name} onChange={handleChange} />
-          <Input name="tle1" placeholder="TLE LINE 1" value={form.tle1} onChange={handleChange} />
-          <Input name="tle2" placeholder="TLE LINE 2" value={form.tle2} onChange={handleChange} />
+          <Input
+            name="name"
+            placeholder="NAME"
+            value={form.name}
+            onChange={handleChange}
+            onPaste={handlePaste('name')}
+          />
+          <Input
+            name="tle1"
+            placeholder="TLE LINE 1"
+            value={form.tle1}
+            onChange={handleChange}
+            onPaste={handlePaste('tle1')}
+          />
+          <Input
+            name="tle2"
+            placeholder="TLE LINE 2"
+            value={form.tle2}
+            onChange={handleChange}
+            onPaste={handlePaste('tle2')}
+          />
         </div>
         <div className="mt-6 flex justify-end gap-2">
           <Button onClick={handleClose}>Cancel</Button>

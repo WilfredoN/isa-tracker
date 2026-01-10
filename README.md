@@ -77,6 +77,8 @@
   - [ ] Add admin/monitoring features
 
 - [ ] **Testing & Quality**
+  - [ ] Set up linting for Python and TypeScript
+  - [ ] Add CI/CD pipeline (GitHub Actions?)
   - [ ] Add backend API tests
   - [ ] Add client (React) tests
   - [ ] Add end-to-end integration tests
