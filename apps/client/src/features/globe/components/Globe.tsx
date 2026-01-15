@@ -9,20 +9,20 @@ import { useRealtimeClock } from '../hooks/useRealtimeClock';
 import { useSatelliteStore } from '../../../store';
 
 export const Globe = () => {
-  const { satellites, error } = useSatellites('', true);
+  const { satellites, error, isLoading, isFetching } = useSatellites('', true);
   const viewerRef = useRef<CesiumComponentRef<Cesium.Viewer>>(null);
   const selectedSatellite = useSatelliteStore((state) => state.selectedSatellite);
   useRealtimeClock(viewerRef);
   const sats = useMemo(() => {
     const issId = ISS_PLACEHOLDER.id;
-    if (error) {
+    if (error || isLoading || isFetching) {
       return [ISS_PLACEHOLDER];
     }
     if (!satellites || satellites.length === 0) {
       return [];
     }
     return satellites.filter((satellite) => satellite.id !== issId);
-  }, [satellites, error]);
+  }, [error, isLoading, isFetching, satellites]);
 
   useEffect(() => {
     if (!viewerRef.current?.cesiumElement) return;
