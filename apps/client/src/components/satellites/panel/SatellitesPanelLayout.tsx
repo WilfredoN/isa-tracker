@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 export const SatellitesPanelLayout = ({ children }: { children: ReactNode }) => (
-  <section className="flex h-full w-full max-w-md flex-col gap-4 border-2 border-[var(--foreground)] bg-[var(--panel-bg)] p-4 shadow-[var(--glow)]">
+  <section className="border-(--foreground) bg-(--panel-bg) shadow-(--glow) flex h-full min-h-max w-full max-w-md flex-col gap-4 border-2 p-4">
     {children}
   </section>
 );

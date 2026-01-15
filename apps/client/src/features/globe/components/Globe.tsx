@@ -52,7 +52,10 @@ export const Globe = () => {
         baseLayerPicker={false}
         sceneModePicker={false}
         homeButton={false}
-        timeline={true}
+        animation={false}
+        timeline={false}
+        infoBox={false}
+        navigationHelpButton={false}
         fullscreenButton={false}
       >
         <SatellitesLayer satellites={sats} />
