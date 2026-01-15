@@ -6,7 +6,9 @@ import { useSatellites } from '../../../components/satellites/hooks/useSatellite
 import { ISS_PLACEHOLDER } from '../../../services/placeholderSatellite';
 import { useSatelliteStore } from '../../../store';
 import { useRealtimeClock } from '../hooks/useRealtimeClock';
+
 import { SatellitesLayer } from './SatellitesLayer';
+import { SatelliteDetails } from './SatelliteDetails';
 
 export const Globe = () => {
   const { satellites, error, isLoading, isFetching } = useSatellites('', true);
@@ -47,27 +49,30 @@ export const Globe = () => {
   }, [selectedSatellite]);
 
   return (
-    <div className="border-(--foreground) bg-(--panel-bg) shadow-(--glow) h-fit flex-1 border-2 p-1">
-      <Viewer
-        ref={viewerRef}
-        baseLayerPicker={false}
-        sceneModePicker={false}
-        homeButton={false}
-        animation={false}
-        timeline={false}
-        infoBox={false}
-        navigationHelpButton={false}
-        fullscreenButton={false}
-        resolutionScale={1.5}
-        useBrowserRecommendedResolution={true}
-        skyBox={false}
-        skyAtmosphere={false}
-        shadows={false}
-        scene3DOnly={true}
-        creditContainer={undefined}
-      >
-        <SatellitesLayer satellites={sats} />
-      </Viewer>
+    <div className="flex flex-1 flex-col">
+      <div className="border-(--foreground) bg-(--panel-bg) shadow-(--glow) h-fit border-2 p-1">
+        <Viewer
+          ref={viewerRef}
+          baseLayerPicker={false}
+          sceneModePicker={false}
+          homeButton={false}
+          animation={false}
+          timeline={false}
+          infoBox={false}
+          navigationHelpButton={false}
+          fullscreenButton={false}
+          resolutionScale={1.5}
+          useBrowserRecommendedResolution={true}
+          skyBox={false}
+          skyAtmosphere={false}
+          shadows={false}
+          scene3DOnly={true}
+          creditContainer={undefined}
+        >
+          <SatellitesLayer satellites={sats} />
+        </Viewer>
+      </div>
+      <SatelliteDetails />
     </div>
   );
 };
