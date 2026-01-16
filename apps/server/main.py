@@ -1,18 +1,42 @@
 from db.database import SessionLocal
-from db.schema import Satellite as SatelliteModel
-from db.schema import User as UserModel
+from db.schema import User as UserModel, Satellite as SatelliteModel
 from db.tables import create_tables
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI
+from typing import Union
 from fastapi.middleware.cors import CORSMiddleware
-from schemas import SatelliteCreate, UserBase
+from fastapi.responses import JSONResponse
+from schemas import (
+    UserRegister,
+    SatelliteCreate,
+    UserResponse,
+    UsersListResponse,
+    SatellitesListResponse,
+    MessageResponse,
+)
+
 from sqlalchemy.orm import Session
+from helpers import (
+    not_found_response,
+    hash_password,
+    verify_password,
+    get_user_by_id,
+    get_user_by_login,
+    get_satellite_by_id,
+)
+from mappers import user_to_response, satellite_to_response
 
 
-app = FastAPI(title="Satellite Tracker API")
+from contextlib import asynccontextmanager
 
-@app.on_event("startup")
-def on_startup():
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     create_tables()
+    yield
+
+
+app = FastAPI(title="Satellite Tracker API", lifespan=lifespan)
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -35,158 +59,147 @@ def get_db():
 async def root():
     return {"status": "for all mankind"}
 
-@app.get("/users")
-async def get_users(db: Session = Depends(get_db)):
+
+@app.get("/users", response_model=UsersListResponse)
+async def get_users(db: Session = Depends(get_db)) -> UsersListResponse:
     users = db.query(UserModel).all()
-    result = [
-        {
-            "id": user.id,
-            "chat_id": user.chat_id,
-            "latitude": user.latitude,
-            "longitude": user.longitude,
-            "created_at": user.created_at,
-        }
-        for user in users
-    ]
-    return {"users": result}
 
-@app.post("/users")
-async def create_user(user: UserBase, db: Session = Depends(get_db)):
-    db_user = db.query(UserModel).filter(UserModel.chat_id == user.chat_id).first()
+    result = [user_to_response(user) for user in users]
+    return UsersListResponse(users=result)
+
+
+@app.post("/register")
+async def register_user(user: UserRegister, db: Session = Depends(get_db)):
+    db_user = get_user_by_login(db, user.login)
+
     if db_user:
-        db_user.latitude = user.latitude
-        db_user.longitude = user.longitude
-    else:
-        db_user = UserModel(
-            chat_id=user.chat_id,
-            latitude=user.latitude,
-            longitude=user.longitude,
-        )
-        db.add(db_user)
-    db.commit()
-    return {"message": f"User with chat_id {user.chat_id} created!"}
+        return {"error": "Login already exists"}
 
-@app.get("/users/{id}")
+    password_hashed = hash_password(user.password)
+
+    db_user = UserModel(
+        login=user.login,
+        password=password_hashed,
+        chat_id=user.chat_id,
+        latitude=user.latitude,
+        longitude=user.longitude,
+    )
+
+    db.add(db_user)
+    db.commit()
+
+    return {"message": f"User {user.login} registered!"}
+
+
+@app.post("/login")
+async def login_user(user: UserRegister, db: Session = Depends(get_db)):
+    db_user = get_user_by_login(db, user.login)
+
+    if not db_user or not verify_password(user.password, db_user.password):
+        return {"error": "Invalid login or password"}
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "message": f"User {user.login} logged in successfully",
+            "user": user_to_response(db_user).model_dump(),
+        },
+    )
+
+
+@app.get("/users/{id}", response_model=UserResponse)
 async def get_user(id: int, db: Session = Depends(get_db)):
-    from fastapi.responses import JSONResponse
-    db_user = db.query(UserModel).filter(UserModel.id == id).first()
+    db_user = get_user_by_id(db, id)
+
     if not db_user:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "error": {
-                    "message": "User not found",
-                    "code": 404
-                }
-            }
-        )
-    return {
-        "id": db_user.id,
-        "chat_id": db_user.chat_id,
-        "latitude": db_user.latitude,
-        "longitude": db_user.longitude,
-        "created_at": db_user.created_at,
-    }
+        return not_found_response("User", id)
+
+    return user_to_response(db_user)
 
 
 @app.patch("/users/{id}")
-async def update_user(id: int, user: UserBase, db: Session = Depends(get_db)):
-    from fastapi.responses import JSONResponse
-    db_user = db.query(UserModel).filter(UserModel.id == id).first()
+async def update_user(id: int, user: UserRegister, db: Session = Depends(get_db)):
+    db_user = get_user_by_id(db, id)
+
     if not db_user:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "error": {
-                    "message": "User not found",
-                    "code": 404
-                }
-            }
-        )
+        return not_found_response("User", id)
+
+    db_user.login = user.login
+    db_user.password = hash_password(user.password)
     db_user.latitude = user.latitude
     db_user.longitude = user.longitude
+
     db.commit()
+
     return {"message": f"User with id {id} updated!"}
 
 
-@app.delete("/users/{chat_id}")
-async def delete_user(chat_id: int, db: Session = Depends(get_db)):
-    from fastapi.responses import JSONResponse
-    db_user = db.query(UserModel).filter(UserModel.chat_id == chat_id).first()
+@app.delete("/users/{id}")
+async def delete_user(id: int, db: Session = Depends(get_db)):
+    db_user = get_user_by_id(db, id)
+
     if not db_user:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "error": {
-                    "message": "User not found",
-                    "code": 404
-                }
-            }
-        )
+        return not_found_response("User", id)
+
     db.delete(db_user)
     db.commit()
-    return {"message": f"User with chat_id {chat_id} deleted!"}
+
+    return {"message": f"User with id {id} deleted!"}
 
 
-@app.get("/satellites")
-async def get_satellites(db: Session = Depends(get_db)):
+@app.get("/satellites", response_model=SatellitesListResponse)
+async def get_satellites(db: Session = Depends(get_db)) -> SatellitesListResponse:
     satellites = db.query(SatelliteModel).all()
-    result = [
-        {
-            "id": satellite.id,
-            "name": satellite.name,
-            "tle_1": satellite.tle_1,
-            "tle_2": satellite.tle_2,
-            "added_at": satellite.added_at,
-        }
-        for satellite in satellites
-    ]
-    return {"satellites": result}
+
+    result = [satellite_to_response(satellite) for satellite in satellites]
+
+    return SatellitesListResponse(satellites=result)
 
 
-@app.post("/satellites")
-async def add_satellite(satellite: SatelliteCreate, db: Session = Depends(get_db)):
-    from fastapi.responses import JSONResponse
+@app.post("/satellites", response_model=MessageResponse)
+async def add_satellite(
+    satellite: SatelliteCreate, db: Session = Depends(get_db)
+) -> Union[MessageResponse, JSONResponse]:
     db_satellite = (
         db.query(SatelliteModel)
         .filter(SatelliteModel.name.ilike(satellite.name))
         .first()
     )
+
     if db_satellite:
         return JSONResponse(
             status_code=409,
             content={
                 "error": {
                     "message": f"Satellite with name similar to {satellite.name} already exists",
-                    "code": 409
+                    "code": 409,
                 }
-            }
+            },
         )
+
     db_satellite = SatelliteModel(
         name=satellite.name, tle_1=satellite.tle_1, tle_2=satellite.tle_2
     )
+
     db.add(db_satellite)
     db.flush()
     db.commit()
-    return {
-        "message": f"Satellite {satellite.name} added with ID {db_satellite.id} at {db_satellite.added_at}"
-    }
+
+    return MessageResponse(
+        message=f"Satellite {satellite.name} added with ID {db_satellite.id} at {db_satellite.added_at}"
+    )
 
 
-@app.delete("/satellites/{id}")
-async def delete_satellite(id: int, db: Session = Depends(get_db)):
-    from fastapi.responses import JSONResponse
-    db_satellite = db.query(SatelliteModel).filter(SatelliteModel.id == id).first()
+@app.delete("/satellites/{id}", response_model=MessageResponse)
+async def delete_satellite(
+    id: int, db: Session = Depends(get_db)
+) -> Union[MessageResponse, JSONResponse]:
+    db_satellite = get_satellite_by_id(db, id)
+
     if not db_satellite:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "error": {
-                    "message": "Satellite not found",
-                    "code": 404
-                }
-            }
-        )
+        return not_found_response("Satellite", id)
+
     db.delete(db_satellite)
     db.commit()
-    return {"message": f"Satellite with ID {id} deleted!"}
+
+    return MessageResponse(message=f"Satellite with ID {id} deleted!")

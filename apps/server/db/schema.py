@@ -8,6 +8,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    Index,
     func,
 )
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column
@@ -19,14 +20,16 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    login: Mapped[str] = mapped_column(
+        String(128), unique=True, nullable=False, index=True
+    )
+    password: Mapped[str] = mapped_column(String(128), nullable=False)
     chat_id: Mapped[int] = mapped_column(
         BigInteger, unique=True, nullable=True, index=True
     )
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
 
-
-from sqlalchemy import Index, func as sa_func
 
 class Satellite(Base):
     __tablename__ = "satellites"
@@ -42,5 +45,5 @@ class Satellite(Base):
     )
 
     __table_args__ = (
-        Index("ix_satellites_name_lower_unique", sa_func.lower(name), unique=True),
+        Index("ix_satellites_name_lower_unique", func.lower(name), unique=True),
     )
